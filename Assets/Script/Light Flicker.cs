@@ -16,10 +16,20 @@ public class EmergencyAlarm : MonoBehaviour
     [SerializeField] private AudioClip alarmSound;
     [SerializeField] private bool playOnStart = true;
     
+    [Header("Proximity Transition (Door Reveal)")]
+    [SerializeField] private bool useProximityTransition = true;
+    [SerializeField] private Transform doorTransform;
+    [SerializeField] private string doorObjectName = "Cube (4)";
+    [SerializeField] private Transform playerTransform;
+    [SerializeField] private string playerObjectName = "Bag.2_White";
+    [SerializeField] private float proximityRadius = 3f;
+    [SerializeField] private Color clearColor = Color.green;
+    
     private float[] originalIntensities;
     private Color[] originalColors;
     private float flickerTimer;
     private bool lightsOn = true;
+    private float transitionFactor; // 0 = full emergency, 1 = all clear (green, no flicker, no sound)
     
     void Start()
     {
@@ -85,16 +95,74 @@ public class EmergencyAlarm : MonoBehaviour
         {
             Debug.LogWarning("EmergencyAlarm: No alarm sound assigned. Assign an AudioClip to enable sound.");
         }
+        
+        // Find door and player for proximity transition
+        if (useProximityTransition)
+        {
+            if (doorTransform == null)
+            {
+                GameObject doorObj = GameObject.Find(doorObjectName);
+                if (doorObj != null) doorTransform = doorObj.transform;
+                else Debug.LogWarning("EmergencyAlarm: Could not find door '" + doorObjectName + "'. Assign manually.");
+            }
+            if (playerTransform == null)
+            {
+                GameObject playerObj = GameObject.Find(playerObjectName);
+                if (playerObj != null) playerTransform = playerObj.transform;
+                else Debug.LogWarning("EmergencyAlarm: Could not find player '" + playerObjectName + "'. Assign manually.");
+            }
+        }
     }
     
     void Update()
     {
+        // Calculate proximity-based transition (0 = full emergency, 1 = all clear)
+        if (useProximityTransition && doorTransform != null && playerTransform != null)
+        {
+            float distance = Vector3.Distance(doorTransform.position, playerTransform.position);
+            transitionFactor = distance <= proximityRadius ? (1f - distance / proximityRadius) : 0f;
+        }
+        else
+        {
+            transitionFactor = 0f;
+        }
+        
+        // Fade/stop alarm sound based on transition
+        if (alarmAudioSource != null && alarmSound != null)
+        {
+            alarmAudioSource.volume = Mathf.Clamp01(1f - transitionFactor);
+            if (transitionFactor >= 0.99f && alarmAudioSource.isPlaying)
+            {
+                alarmAudioSource.Stop();
+            }
+            else if (transitionFactor < 0.99f && playOnStart && !alarmAudioSource.isPlaying)
+            {
+                alarmAudioSource.Play();
+            }
+        }
+        
         if (lights == null || lights.Length == 0)
             return;
         
+        // When transitioned (no flicker): solid color from red->green
+        if (transitionFactor > 0.6f)
+        {
+            Color targetColor = Color.Lerp(emergencyColor, clearColor, transitionFactor);
+            for (int i = 0; i < lights.Length; i++)
+            {
+                if (lights[i] == null) continue;
+                lights[i].enabled = true;
+                lights[i].intensity = originalIntensities[i];
+                lights[i].color = targetColor;
+            }
+            return;
+        }
+        
+        // Flicker mode: scale speed based on transition (slower as we approach green)
+        float effectiveFlickerInterval = Mathf.Lerp(flickerInterval, flickerInterval * 4f, transitionFactor);
         flickerTimer += Time.deltaTime;
         
-        if (flickerTimer >= flickerInterval)
+        if (flickerTimer >= effectiveFlickerInterval)
         {
             flickerTimer = 0f;
             lightsOn = !lightsOn;
@@ -102,12 +170,13 @@ public class EmergencyAlarm : MonoBehaviour
             for (int i = 0; i < lights.Length; i++)
             {
                 if (lights[i] == null) continue;
+                Color lightColor = Color.Lerp(useRedEmergencyColor ? emergencyColor : originalColors[i], clearColor, transitionFactor);
                 
                 if (lightsOn)
                 {
                     lights[i].enabled = true;
                     lights[i].intensity = originalIntensities[i];
-                    lights[i].color = useRedEmergencyColor ? emergencyColor : originalColors[i];
+                    lights[i].color = lightColor;
                 }
                 else
                 {
@@ -133,11 +202,11 @@ public class EmergencyAlarm : MonoBehaviour
         }
         
         // Restore lights
-        if (lights != null)
+        if (lights != null && originalIntensities != null && originalColors != null)
         {
             for (int i = 0; i < lights.Length; i++)
             {
-                if (lights[i] != null)
+                if (lights[i] != null && i < originalIntensities.Length && i < originalColors.Length)
                 {
                     lights[i].enabled = true;
                     lights[i].intensity = originalIntensities[i];
