@@ -26,6 +26,22 @@ documentation at the following URL:
 Version History / Changelog
 ---------------------------
 
+1.6.0 (2024-11-20)
+-----
+- Added Trained Markersets Streaming Script to Stream Trained Markerset Data for Motive
+- Fixed Materials to be compatible with Universal Render Pipeline Materials
+
+1.5.1 (2024-09-16)
+-----
+- Fixed a bug where Motive or Unity would crash when Streaming via Unicast on newer versions of Motive.
+
+1.5.0 (2024-06-19)
+-----
+- Improved naming conventions for active markers.
+- Fix for camera locations being flipped upside down on the world axis.
+- Added a flag for rigid bodies that says whether they are tracked or not.
+
+
 1.4.0 (2021-08-09)
 -----
 - Added the ability to visualize camera positions.
