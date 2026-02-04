@@ -7,6 +7,7 @@ public class SlidingDoor : MonoBehaviour
     [SerializeField] private Transform playerTransform;
     
     [Header("Proximity Settings")]
+    [Tooltip("Door opens when object is within this distance. Uses horizontal distance (X and Z) only; Y is ignored.")]
     [SerializeField] private float proximityRadius = 3f;
     
     [Header("Slide Settings")]
@@ -43,10 +44,13 @@ public class SlidingDoor : MonoBehaviour
         if (playerTransform == null)
             return;
         
-        float distance = Vector3.Distance(transform.position, playerTransform.position);
+        // Use horizontal distance only (X and Z). Ignore Y so height doesn't affect the door.
+        Vector3 doorPos = transform.position;
+        Vector3 playerPos = playerTransform.position;
+        float distanceXZ = Vector2.Distance(new Vector2(doorPos.x, doorPos.z), new Vector2(playerPos.x, playerPos.z));
         
-        // Open when player is within proximity, close when outside
-        if (distance <= proximityRadius)
+        // Open when player is within proximity (based on XZ only), close when outside
+        if (distanceXZ <= proximityRadius)
         {
             isOpen = true;
         }
