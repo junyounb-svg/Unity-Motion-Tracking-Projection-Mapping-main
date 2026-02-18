@@ -984,6 +984,28 @@ MonoBehaviour:
   StreamingClient: {fileID: 1498922920}
   RigidBodyId: 502
   NetworkCompensation: 1
+--- !u!114 &343969940
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 343969938}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14d7cada4f82f45a6862ab2ca1885e82, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  portName: COM3
+  baudRate: 9600
+  autoDetectPort: 1
+  moveSpeed: 5
+  use2DMovement: 1
+  deadZone: 0.15
+  minX: 0
+  maxX: 0
+  minY: 0
+  maxY: 0
 --- !u!1 &344743097
 GameObject:
   m_ObjectHideFlags: 0
@@ -3461,6 +3483,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7416880498922678429, guid: 3c8a5556b47971048b140199c38c5c0b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 343969939}
+    - targetCorrespondingSourceObject: {fileID: 7416880498922678429, guid: 3c8a5556b47971048b140199c38c5c0b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 343969940}
   m_SourcePrefab: {fileID: 100100000, guid: 3c8a5556b47971048b140199c38c5c0b, type: 3}
 --- !u!1 &2119656862
 GameObject:
